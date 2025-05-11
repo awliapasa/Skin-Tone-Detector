@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 
 st.markdown(
     """
@@ -9,6 +8,22 @@ st.markdown(
     }
     h1, h2, h3, h4, h5, h6, p, div {
         color: #1B1E2E !important;
+    }
+    /* Change the text color of the selectbox (selected value) */
+    div[data-baseweb="select"] > div {
+        color: white !important; /* Change the text color of the selected value */
+    }
+    /* Change the dropdown menu options text color */
+    div[data-baseweb="menu"] span {
+        color: white !important; /* Ensure dropdown options text is white */
+    }
+    /* Change the dropdown menu background color */
+    div[data-baseweb="menu"] {
+        background-color: #1B1E2E !important; /* Dropdown background color */
+    }
+    /* Change the label text color */
+    label {
+        color: white !important; /* Change the label text color */
     }
     button {
         background-color: #FFC0CB !important;
@@ -42,11 +57,9 @@ def go_to_result():
 
 # navigasi sidebar
 with st.sidebar:
-    selected = option_menu('Skin Tone Detector',
-                            ['Description Site',
-                            'Detector Site'],
-                            default_index=0)
-
+    selected = st.selectbox('Skin Tone Detector', 
+                             ['Description Site', 'Detector Site'])
+    
 # halaman deskripsi
 if(selected=='Description Site'):
     st.markdown("<h1 style='text-align: center;'>Type of Skin Tone</h1>", unsafe_allow_html=True)
