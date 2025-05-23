@@ -1,5 +1,31 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
+import cv2
+import numpy as np
+from PIL import Image
+
+def skinTone_detector(image_data):
+    img = Image.open(image_data).convert("RGB")
+    img = np.array(img)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+
+    h, w, _ = img.shape
+    roi = img[h//4:3*h//4, w//4:3*w//4]
+
+    avg_h = np.mean(roi[:, :, 0])
+    avg_s = np.mean(roi[:, :, 1])
+    avg_v = np.mean(roi[:, :, 2])
+
+    if 0 <= avg_h <= 50 and 10 <= avg_s <= 60 and 80 <avg_v <= 255:
+        return "FAIR"
+    elif 10 <= avg_h <= 50 and 30 <= avg_s <= 90 and 70 <avg_v <= 240:
+        return "LIGHT"
+    elif 10 <= avg_h <= 40 and 50 <= avg_s <= 120 and 40 <avg_v <= 200:
+        return "MEDIUM"
+    elif 0 <= avg_h <= 30 and 60 <= avg_s <= 150 and 20 <avg_v <= 100:
+        return "DARK"
+    else:
+        return "An Unknown Skin Tone"
 
 st.markdown(
     """
@@ -77,6 +103,7 @@ if (selected=='Detector Site'):
             upload = st.button('Upload Photo', on_click=go_to_upload)
         with col2:
             photo = st.button('Take a Photo', on_click=go_to_take_photo)
+
     # halaman upload
     elif st.session_state.subpage == "upload":
         st.title('Please Upload your Photo')
@@ -88,7 +115,7 @@ if (selected=='Detector Site'):
             st.write("")
             st.write("Classifying...")
             # Menampilkan hasil klasifikasi
-            st.session_state.result = "MEDIUM"
+            st.session_state.result = skinTone_detector(uploaded_file)
             st.button('See Result', on_click=go_to_result)
     
     elif st.session_state.subpage == "take_photo":
@@ -102,7 +129,7 @@ if (selected=='Detector Site'):
             st.write("")
             st.write("Classifying...")
             # Menampilkan hasil klasifikasi
-            st.session_state.result = "MEDIUM"
+            st.session_state.result = skinTone_detector(picture)
             st.button('See Result', on_click=go_to_result)
     
     # halaman hasil
@@ -111,12 +138,20 @@ if (selected=='Detector Site'):
         st.title('RESULT')
         st.text('Your skin tone is:')
         st.subheader(st.session_state.result)
-        st.image(f"images/{st.session_state.result}.jpg", caption=f"{st.session_state.result} Skin Tone", use_container_width=True)
-        st.text('Your Color Palette Makeup Recommendation:')
-        col1, col2, col3 = st.columns(3, gap='medium')
-        with col1:
-            st.image("images\MEDIUM\Blush\Blush.jpg", caption="Blush", use_container_width=True)
-        with col2:
-            st.image("images\MEDIUM\Foundation\Foundation.jpg", caption="Foundation", use_container_width=True)
-        with col3:
-            st.image("images\MEDIUM\Lipstick\Lipstick.jpg", caption="Lipstick", use_container_width=True)
+
+        skin = st.session_state.result
+        if skin == "An Unknown Skin Tone":
+            st.warning("Please try again with clearer photo!")
+        else:
+            st.image(f"images/{skin}.jpg", caption=f"{st.session_state.result} Skin Tone", use_container_width=True)
+            st.text('Your Color Palette Makeup Recommendation:')
+            
+            col1, col2, col3 = st.columns(3, gap='medium')
+            with col1:
+                st.image(f"images\{skin}\Blush\Blush.jpg", caption="Blush", use_container_width=True)
+            with col2:
+                st.image(f"images\{skin}\Foundation\Foundation.jpg", caption="Foundation", use_container_width=True)
+            with col3:
+                st.image(f"images\{skin}\Lipstick\Lipstick.jpg", caption="Lipstick", use_container_width=True)
+
+
